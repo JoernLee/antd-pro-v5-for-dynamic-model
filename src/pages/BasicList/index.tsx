@@ -1,40 +1,12 @@
 import { PageContainer } from '@ant-design/pro-layout';
 import { Button, Col, Pagination, Row, Table, Card, Space } from 'antd';
 import styles from './index.less';
+import { useRequest } from 'umi';
 
 const BasicLayout = () => {
-  const dataSource = [
-    {
-      key: '1',
-      name: '胡彦斌',
-      age: 32,
-      address: '西湖区湖底公园1号',
-    },
-    {
-      key: '2',
-      name: '胡彦祖',
-      age: 42,
-      address: '西湖区湖底公园1号',
-    },
-  ];
-
-  const columns = [
-    {
-      title: '姓名',
-      dataIndex: 'name',
-      key: 'name',
-    },
-    {
-      title: '年龄',
-      dataIndex: 'age',
-      key: 'age',
-    },
-    {
-      title: '住址',
-      dataIndex: 'address',
-      key: 'address',
-    },
-  ];
+  const init = useRequest<{ data: BasicListAPI.Data }>(
+    'https://public-api-v2.aspirantzhang.com/api/admins?X-API-KEY=antd',
+  );
 
   function searchLayout() {}
 
@@ -76,7 +48,11 @@ const BasicLayout = () => {
       {searchLayout()}
       <Card>
         {beforeTableLayout()}
-        <Table dataSource={dataSource} columns={columns} pagination={false} />
+        <Table
+          dataSource={init?.data?.dataSource}
+          columns={init?.data?.layout?.tableColumn.filter((item: any) => !item.hideInColumn)}
+          pagination={false}
+        />
         {afterTableLayout()}
       </Card>
       {batchToolBar()}
