@@ -8,6 +8,7 @@ const ColumnBuilder = (columns: BasicListAPI.TableColumn[] | undefined) => {
       title: 'ID',
       key: 'id',
       dataIndex: 'id',
+      sorter: true,
     },
   ];
   const result: BasicListAPI.TableColumn[] = [];

@@ -9,18 +9,32 @@ import ColumnBuilder from '@/pages/BasicList/builder/ColumnBuilder';
 const BasicLayout = () => {
   const [page, setPage] = useState(1);
   const [perPage, setPerPage] = useState(10);
+  const [sort, setSort] = useState('');
+  const [order, setOrder] = useState('');
 
   const init = useRequest<{ data: BasicListAPI.Data }>(
-    `https://public-api-v2.aspirantzhang.com/api/admins?X-API-KEY=antd&page=${page}&per_page=${perPage}`,
+    `https://public-api-v2.aspirantzhang.com/api/admins?X-API-KEY=antd&page=${page}&per_page=${perPage}${
+      sort && `&sort=${sort}`
+    }${order && `&order=${order}`}`,
   );
 
   useEffect(() => {
     init.run();
-  }, [page, perPage]);
+  }, [page, perPage, sort, order]);
 
   const onPaginationChange = (_page: number, _pageSize: number) => {
     setPage(_page);
     setPerPage(_pageSize);
+  };
+
+  const onTableChange = (pagination: any, filters: any, sorter: any) => {
+    if (sorter && sorter.field && sorter.order) {
+      setSort(sorter.field);
+      setOrder(sorter.order.substring(0, sorter.order.length - 3));
+    } else {
+      setSort('');
+      setOrder('');
+    }
   };
 
   const searchLayout = () => {};
@@ -69,6 +83,7 @@ const BasicLayout = () => {
           dataSource={init?.data?.dataSource}
           columns={ColumnBuilder(init?.data?.layout?.tableColumn)}
           pagination={false}
+          onChange={onTableChange}
         />
         {afterTableLayout()}
       </Card>
