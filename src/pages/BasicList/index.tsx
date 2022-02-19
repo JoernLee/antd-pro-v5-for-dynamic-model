@@ -1,8 +1,10 @@
 import { PageContainer } from '@ant-design/pro-layout';
-import { Button, Col, Pagination, Row, Table, Card, Space } from 'antd';
+import { Col, Pagination, Row, Table, Card, Space } from 'antd';
 import styles from './index.less';
 import { useRequest } from 'umi';
 import { useEffect, useState } from 'react';
+import ActionBuilder from '@/pages/BasicList/builder/ActionBuilder';
+import ColumnBuilder from '@/pages/BasicList/builder/ColumnBuilder';
 
 const BasicLayout = () => {
   const [page, setPage] = useState(1);
@@ -30,10 +32,7 @@ const BasicLayout = () => {
           ...
         </Col>
         <Col xs={24} sm={12} className={styles.tableToolBar}>
-          <Space>
-            <Button type={'primary'}>Add</Button>
-            <Button type={'primary'}>Add</Button>
-          </Space>
+          <Space>{ActionBuilder(init?.data?.layout?.tableToolBar)}</Space>
         </Col>
       </Row>
     );
@@ -68,7 +67,7 @@ const BasicLayout = () => {
         {beforeTableLayout()}
         <Table
           dataSource={init?.data?.dataSource}
-          columns={init?.data?.layout?.tableColumn.filter((item: any) => !item.hideInColumn)}
+          columns={ColumnBuilder(init?.data?.layout?.tableColumn)}
           pagination={false}
         />
         {afterTableLayout()}

@@ -57,36 +57,20 @@ declare module BasicListAPI {
     title: string;
     dataIndex: string;
     key: string;
-    type: string;
-    data: Datum[];
+    type?: string;
+    data?: Datum[];
     hideInColumn?: boolean;
     sorter?: boolean;
-    mode: string;
-    actions: Action[];
-  }
+    mode?: string;
+    actions?: Action[];
 
-  export interface TableToolBar {
-    component: string;
-    text: string;
-    type: string;
-    action: string;
-    id: string;
-    uri: string;
-  }
-
-  export interface BatchToolBar {
-    component: string;
-    text: string;
-    type: string;
-    action: string;
-    uri: string;
-    method: string;
+    [key: string]: any;
   }
 
   export interface Layout {
     tableColumn: TableColumn[];
-    tableToolBar: TableToolBar[];
-    batchToolBar: BatchToolBar[];
+    tableToolBar: Action[];
+    batchToolBar: Action[];
   }
 
   export interface Pivot {
