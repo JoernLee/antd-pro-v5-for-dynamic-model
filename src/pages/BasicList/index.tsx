@@ -2,15 +2,28 @@ import { PageContainer } from '@ant-design/pro-layout';
 import { Button, Col, Pagination, Row, Table, Card, Space } from 'antd';
 import styles from './index.less';
 import { useRequest } from 'umi';
+import { useEffect, useState } from 'react';
 
 const BasicLayout = () => {
+  const [page, setPage] = useState(1);
+  const [perPage, setPerPage] = useState(10);
+
   const init = useRequest<{ data: BasicListAPI.Data }>(
-    'https://public-api-v2.aspirantzhang.com/api/admins?X-API-KEY=antd',
+    `https://public-api-v2.aspirantzhang.com/api/admins?X-API-KEY=antd&page=${page}&per_page=${perPage}`,
   );
 
-  function searchLayout() {}
+  useEffect(() => {
+    init.run();
+  }, [page, perPage]);
 
-  function beforeTableLayout() {
+  const onPaginationChange = (_page: number, _pageSize: number) => {
+    setPage(_page);
+    setPerPage(_pageSize);
+  };
+
+  const searchLayout = () => {};
+
+  const beforeTableLayout = () => {
     return (
       <Row>
         <Col xs={24} sm={12}>
@@ -24,24 +37,29 @@ const BasicLayout = () => {
         </Col>
       </Row>
     );
-  }
+  };
 
-  function afterTableLayout() {
+  const afterTableLayout = () => {
     return (
       <Row>
         <Col xs={24} sm={12}>
           ...
         </Col>
         <Col xs={24} sm={12} className={styles.tableToolBar}>
-          <Pagination />
+          <Pagination
+            current={init?.data?.meta?.page || 1}
+            pageSize={init?.data?.meta?.per_page || 10}
+            total={init?.data?.meta?.total}
+            onChange={onPaginationChange}
+          />
         </Col>
       </Row>
     );
-  }
+  };
 
-  function batchToolBar() {
+  const batchToolBar = () => {
     // 悬浮操作区域
-  }
+  };
 
   return (
     <PageContainer>
