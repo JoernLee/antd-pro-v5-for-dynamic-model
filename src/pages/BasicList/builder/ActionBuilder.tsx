@@ -5,7 +5,11 @@ const ActionBuilder = (actions: BasicListAPI.Action[] | undefined) => {
   return (actions || []).map((action: any) => {
     if (action.component === 'button') {
       // 避免类型错误且负责
-      return <Button type={action.type as ButtonType}>{action.text}</Button>;
+      return (
+        <Button key={action.text} type={action.type as ButtonType}>
+          {action.text}
+        </Button>
+      );
     }
     return null;
   });

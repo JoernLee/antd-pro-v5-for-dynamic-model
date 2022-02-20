@@ -1,16 +1,19 @@
 import { PageContainer } from '@ant-design/pro-layout';
-import { Col, Pagination, Row, Table, Card, Space } from 'antd';
+import { Col, Pagination, Row, Table, Card, Space, Button } from 'antd';
 import styles from './index.less';
 import { useRequest } from 'umi';
 import { useEffect, useState } from 'react';
 import ActionBuilder from '@/pages/BasicList/builder/ActionBuilder';
 import ColumnBuilder from '@/pages/BasicList/builder/ColumnBuilder';
+import Modal from '@/pages/BasicList/Modal';
 
 const BasicLayout = () => {
   const [page, setPage] = useState(1);
   const [perPage, setPerPage] = useState(10);
   const [sort, setSort] = useState('');
   const [order, setOrder] = useState('');
+  const [modalVisible, setModalVisible] = useState(false);
+  const [modalUri, setModalUri] = useState('');
 
   const init = useRequest<{ data: BasicListAPI.Data }>(
     `https://public-api-v2.aspirantzhang.com/api/admins?X-API-KEY=antd&page=${page}&per_page=${perPage}${
@@ -76,10 +79,29 @@ const BasicLayout = () => {
 
   return (
     <PageContainer>
+      <Button
+        type="primary"
+        onClick={() => {
+          setModalUri('https://public-api-v2.aspirantzhang.com/api/admins/add?X-API-KEY=antd');
+          setModalVisible(true);
+        }}
+      >
+        Add
+      </Button>
+      <Button
+        type="primary"
+        onClick={() => {
+          setModalUri('https://public-api-v2.aspirantzhang.com/api/admins/206?X-API-KEY=antd');
+          setModalVisible(true);
+        }}
+      >
+        Edit
+      </Button>
       {searchLayout()}
       <Card>
         {beforeTableLayout()}
         <Table
+          rowKey="id"
           dataSource={init?.data?.dataSource}
           columns={ColumnBuilder(init?.data?.layout?.tableColumn)}
           pagination={false}
@@ -88,6 +110,7 @@ const BasicLayout = () => {
         {afterTableLayout()}
       </Card>
       {batchToolBar()}
+      <Modal visible={modalVisible} uri={modalUri} handleCancel={() => setModalVisible(false)} />
     </PageContainer>
   );
 };
