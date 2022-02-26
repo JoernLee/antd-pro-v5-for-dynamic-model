@@ -110,7 +110,7 @@ const BasicLayout = () => {
         {afterTableLayout()}
       </Card>
       {batchToolBar()}
-      <Modal visible={modalVisible} uri={modalUri} handleCancel={() => setModalVisible(false)} />
+      <Modal visible={modalVisible} initUri={modalUri} handleCancel={() => setModalVisible(false)} />
     </PageContainer>
   );
 };
