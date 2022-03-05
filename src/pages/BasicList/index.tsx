@@ -1,11 +1,11 @@
 import { PageContainer } from '@ant-design/pro-layout';
-import { Col, Pagination, Row, Table, Card, Space, Button } from 'antd';
+import { Col, Pagination, Row, Table, Card, Space } from 'antd';
 import styles from './index.less';
 import { useRequest } from 'umi';
 import { useEffect, useState } from 'react';
 import ActionBuilder from '@/pages/BasicList/builder/ActionBuilder';
 import ColumnBuilder from '@/pages/BasicList/builder/ColumnBuilder';
-import Modal from '@/pages/BasicList/Modal';
+import Modal from '@/pages/BasicList/component/Modal';
 
 const BasicLayout = () => {
   const [page, setPage] = useState(1);
@@ -15,7 +15,7 @@ const BasicLayout = () => {
   const [modalVisible, setModalVisible] = useState(false);
   const [modalUri, setModalUri] = useState('');
 
-  const init = useRequest<{ data: BasicListAPI.Data }>(
+  const init = useRequest<{ data: BasicListAPI.ListData }>(
     `https://public-api-v2.aspirantzhang.com/api/admins?X-API-KEY=antd&page=${page}&per_page=${perPage}${
       sort && `&sort=${sort}`
     }${order && `&order=${order}`}`,
@@ -40,6 +40,16 @@ const BasicLayout = () => {
     }
   };
 
+  const actionHandler = (action: BasicListAPI.Action) => {
+    console.log(action);
+    switch (action.action) {
+      case 'modal':
+        setModalUri(action.uri as string);
+        setModalVisible(true);
+        break;
+    }
+  };
+
   const searchLayout = () => {};
 
   const beforeTableLayout = () => {
@@ -49,7 +59,7 @@ const BasicLayout = () => {
           ...
         </Col>
         <Col xs={24} sm={12} className={styles.tableToolBar}>
-          <Space>{ActionBuilder(init?.data?.layout?.tableToolBar)}</Space>
+          <Space>{ActionBuilder(init?.data?.layout?.tableToolBar, actionHandler, false)}</Space>
         </Col>
       </Row>
     );
@@ -79,38 +89,24 @@ const BasicLayout = () => {
 
   return (
     <PageContainer>
-      <Button
-        type="primary"
-        onClick={() => {
-          setModalUri('https://public-api-v2.aspirantzhang.com/api/admins/add?X-API-KEY=antd');
-          setModalVisible(true);
-        }}
-      >
-        Add
-      </Button>
-      <Button
-        type="primary"
-        onClick={() => {
-          setModalUri('https://public-api-v2.aspirantzhang.com/api/admins/206?X-API-KEY=antd');
-          setModalVisible(true);
-        }}
-      >
-        Edit
-      </Button>
       {searchLayout()}
       <Card>
         {beforeTableLayout()}
         <Table
           rowKey="id"
           dataSource={init?.data?.dataSource}
-          columns={ColumnBuilder(init?.data?.layout?.tableColumn)}
+          columns={ColumnBuilder(init?.data?.layout?.tableColumn, actionHandler)}
           pagination={false}
           onChange={onTableChange}
         />
         {afterTableLayout()}
       </Card>
       {batchToolBar()}
-      <Modal visible={modalVisible} initUri={modalUri} handleCancel={() => setModalVisible(false)} />
+      <Modal
+        visible={modalVisible}
+        initUri={modalUri}
+        handleCancel={() => setModalVisible(false)}
+      />
     </PageContainer>
   );
 };

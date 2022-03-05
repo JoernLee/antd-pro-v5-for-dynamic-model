@@ -1,9 +1,10 @@
-import { Form, Input, Modal as AntdModal } from 'antd';
+import { Form, Input, message, Modal as AntdModal } from 'antd';
 import { useRequest } from 'umi';
 import { useEffect } from 'react';
 import FormBuilder from '@/pages/BasicList/builder/FormBuilder';
 import ActionBuilder from '@/pages/BasicList/builder/ActionBuilder';
 import moment from 'moment';
+import { setFieldsValueAdapter, submitFieldsAdapter } from '@/pages/BasicList/helper';
 
 const Modal = ({
   visible,
@@ -15,26 +16,48 @@ const Modal = ({
   handleCancel: () => void;
 }) => {
   const [form] = Form.useForm();
-  const init = useRequest<{ data: FormAPI.Data }>(initUri, {
-    // 必须手动.run触发，不会在执行时自动触发
-    manual: true,
-  });
+  const init = useRequest<{ data: BasicListAPI.PageData }>(
+    `https://public-api-v2.aspirantzhang.com${initUri}?X-API-KEY=antd`,
+    {
+      // 必须手动.run触发，不会在执行时自动触发
+      manual: true,
+      onError: () => {
+        handleCancel();
+      },
+    },
+  );
+
   const request = useRequest(
     (values) => {
+      message.loading({
+        content: 'Processing...',
+        key: 'process',
+        // 虽然一直存在，但是会被相同key的message覆盖掉
+        duration: 0,
+      });
       const { uri, method, ...formValues } = values;
       return {
         url: `https://public-api-v2.aspirantzhang.com${uri}`,
         method,
         data: {
-          ...formValues,
+          ...submitFieldsAdapter(formValues),
           'X-API-KEY': 'antd',
-          create_time: moment(formValues.create_time).format(),
-          update_time: moment(formValues.update_time).format(),
         },
       };
     },
     {
       manual: true,
+      onSuccess: (data) => {
+        message.success({
+          content: data.message,
+          key: 'process',
+        });
+        handleCancel();
+      },
+      formatResult: (res) => {
+        // format上面onSuccess的入参
+        return res;
+      },
     },
   );
 
@@ -44,26 +67,6 @@ const Modal = ({
       init.run();
     }
   }, [visible]);
-
-  const setFieldsValueAdapter = (data: FormAPI.Data) => {
-    if (data?.layout?.tabs && data?.dataSource) {
-      const newFieldValues = {};
-      data.layout.tabs.forEach((tab) => {
-        tab.data.forEach((field) => {
-          switch (field.type) {
-            case 'datetime':
-              newFieldValues[field.key] = moment(data.dataSource[field.key]);
-              break;
-            default:
-              newFieldValues[field.key] = data.dataSource[field.key];
-              break;
-          }
-        });
-      });
-      return newFieldValues;
-    }
-    return {};
-  };
 
   useEffect(() => {
     if (init.data) {
@@ -99,7 +102,7 @@ const Modal = ({
       <AntdModal
         title={init?.data?.page?.title}
         visible={visible}
-        footer={ActionBuilder(init?.data?.layout?.actions[0].data, actionHandler)}
+        footer={ActionBuilder(init?.data?.layout?.actions[0].data, actionHandler, request.loading)}
         onCancel={handleCancel}
         maskClosable={false}
       >

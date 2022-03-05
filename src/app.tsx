@@ -8,6 +8,8 @@ import Footer from '@/components/Footer';
 import { currentUser as queryCurrentUser } from './services/ant-design-pro/api';
 import { BookOutlined, LinkOutlined } from '@ant-design/icons';
 import defaultSettings from '../config/defaultSettings';
+import { RequestConfig } from '@@/plugin-request/request';
+import { message } from 'antd';
 
 const isDev = process.env.NODE_ENV === 'development';
 const loginPath = '/user/login';
@@ -104,4 +106,44 @@ export const layout: RunTimeLayoutConfig = ({ initialState, setInitialState }) =
     },
     ...initialState?.settings,
   };
+};
+
+const errorHandler = (error: any) => {
+  // request error处理收束
+  console.log('error', error);
+  switch (error.name) {
+    case 'BizError':
+      if (error.data.message) {
+        message.error({
+          content: error.data.message,
+          key: 'process',
+          duration: 20,
+        });
+      } else {
+        message.error({
+          content: 'BizError Error, please try again',
+          key: 'process',
+          duration: 20,
+        });
+      }
+      break;
+    case 'ResponseError':
+      message.error({
+        content: `${error.response.status} ${error.response.statusText}.Please try again`,
+        key: 'process',
+        duration: 20,
+      });
+      break;
+    case 'TypeError':
+      message.error({
+        content: `Network Error.Please try again`,
+        key: 'process',
+        duration: 20,
+      });
+      break;
+  }
+};
+
+export const request: RequestConfig = {
+  errorHandler,
 };
