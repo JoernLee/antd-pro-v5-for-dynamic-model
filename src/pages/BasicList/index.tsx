@@ -40,12 +40,17 @@ const BasicLayout = () => {
     }
   };
 
-  const actionHandler = (action: BasicListAPI.Action) => {
-    console.log(action);
+  const actionHandler = (action: BasicListAPI.Action, record: any) => {
     switch (action.action) {
       case 'modal':
-        setModalUri(action.uri as string);
+        const realUri = action.uri?.replace(/:\w+/g, (field) => {
+          return record[field.replace(':', '')];
+        });
+        setModalUri(realUri as string);
         setModalVisible(true);
+        break;
+      case 'reload':
+        init.run();
         break;
     }
   };
@@ -105,7 +110,12 @@ const BasicLayout = () => {
       <Modal
         visible={modalVisible}
         initUri={modalUri}
-        handleCancel={() => setModalVisible(false)}
+        handleCancel={(reload = false) => {
+          setModalVisible(false);
+          if (reload) {
+            init.run();
+          }
+        }}
       />
     </PageContainer>
   );

@@ -1,5 +1,5 @@
 declare module BasicListAPI {
-  type ActionHandler = (action: BasicListAPI.Action) => void;
+  type ActionHandler = (action: BasicListAPI.Action, record: any) => void;
 
   type Page = {
     title: string;

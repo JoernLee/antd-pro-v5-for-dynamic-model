@@ -13,7 +13,7 @@ const Modal = ({
 }: {
   visible: boolean;
   initUri: string;
-  handleCancel: () => void;
+  handleCancel: (reload?: boolean) => void;
 }) => {
   const [form] = Form.useForm();
   const init = useRequest<{ data: BasicListAPI.PageData }>(
@@ -28,7 +28,7 @@ const Modal = ({
   );
 
   const request = useRequest(
-    (values) => {
+    (values: any) => {
       message.loading({
         content: 'Processing...',
         key: 'process',
@@ -47,14 +47,14 @@ const Modal = ({
     },
     {
       manual: true,
-      onSuccess: (data) => {
+      onSuccess: (data: any) => {
         message.success({
           content: data.message,
           key: 'process',
         });
-        handleCancel();
+        handleCancel(true);
       },
-      formatResult: (res) => {
+      formatResult: (res: any) => {
         // format上面onSuccess的入参
         return res;
       },
@@ -76,7 +76,6 @@ const Modal = ({
 
   const handleFinish = (values: any) => {
     // 拿到表单values发送请求提交表单数据
-    console.log('submit values', values);
     request.run(values);
   };
 
@@ -103,7 +102,7 @@ const Modal = ({
         title={init?.data?.page?.title}
         visible={visible}
         footer={ActionBuilder(init?.data?.layout?.actions[0].data, actionHandler, request.loading)}
-        onCancel={handleCancel}
+        onCancel={() => handleCancel()}
         maskClosable={false}
       >
         <Form
