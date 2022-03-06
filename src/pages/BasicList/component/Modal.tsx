@@ -91,6 +91,9 @@ const Modal = ({
       case 'cancel':
         handleCancel();
         break;
+      case 'reset':
+        form.resetFields();
+        break;
       default:
         break;
     }
