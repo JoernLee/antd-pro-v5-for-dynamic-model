@@ -1,10 +1,11 @@
-import { Form, Input, message, Modal as AntdModal } from 'antd';
+import { Form, Input, message, Modal as AntdModal, Spin, Tag } from 'antd';
 import { useRequest } from 'umi';
 import { useEffect } from 'react';
 import FormBuilder from '@/pages/BasicList/builder/FormBuilder';
 import ActionBuilder from '@/pages/BasicList/builder/ActionBuilder';
 import moment from 'moment';
 import { setFieldsValueAdapter, submitFieldsAdapter } from '@/pages/BasicList/helper';
+import styles from './styles.less';
 
 const Modal = ({
   visible,
@@ -17,7 +18,9 @@ const Modal = ({
 }) => {
   const [form] = Form.useForm();
   const init = useRequest<{ data: BasicListAPI.PageData }>(
-    `https://public-api-v2.aspirantzhang.com${initUri}?X-API-KEY=antd`,
+    () => {
+      return `https://public-api-v2.aspirantzhang.com${initUri}?X-API-KEY=antd`;
+    },
     {
       // 必须手动.run触发，不会在执行时自动触发
       manual: true,
@@ -108,26 +111,32 @@ const Modal = ({
         onCancel={() => handleCancel()}
         maskClosable={false}
       >
-        <Form
-          form={form}
-          labelCol={{ span: 8 }}
-          wrapperCol={{ span: 16 }}
-          initialValues={{
-            create_time: moment(),
-            update_time: moment(),
-            status: true,
-          }}
-          onFinish={handleFinish}
-        >
-          {FormBuilder(init?.data?.layout?.tabs[0].data)}
-          {/*  隐藏的menu，用于记录submit需要的url和method字段，把setState的异步改为同步*/}
-          <Form.Item hidden name={'uri'} key={'uri'}>
-            <Input />
-          </Form.Item>
-          <Form.Item hidden name={'method'} key={'method'}>
-            <Input />
-          </Form.Item>
-        </Form>
+        <Spin spinning={init?.loading} tip="Loading...">
+          <Form
+            form={form}
+            labelCol={{ span: 8 }}
+            wrapperCol={{ span: 16 }}
+            initialValues={{
+              create_time: moment(),
+              update_time: moment(),
+              status: true,
+            }}
+            onFinish={handleFinish}
+          >
+            {FormBuilder(init?.data?.layout?.tabs[0].data)}
+            {/*  隐藏的menu，用于记录submit需要的url和method字段，把setState的异步改为同步*/}
+            <Form.Item hidden name={'uri'} key={'uri'}>
+              <Input />
+            </Form.Item>
+            <Form.Item hidden name={'method'} key={'method'}>
+              <Input />
+            </Form.Item>
+          </Form>
+          <Tag className={styles.updateTimeTag}>
+            {'UpdateTime:' +
+              moment(form.getFieldValue('update_time')).format('YYYY-MM-DD hh:mm:ss')}
+          </Tag>
+        </Spin>
       </AntdModal>
     </div>
   );
