@@ -1,7 +1,8 @@
 import { FooterToolbar, PageContainer } from '@ant-design/pro-layout';
-import { Col, Pagination, Row, Table, Card, Space, Modal as AntdModal, message } from 'antd';
+import { Card, Col, message, Modal as AntdModal, Pagination, Row, Space, Table } from 'antd';
 import styles from './index.less';
-import { useRequest } from 'umi';
+import { useIntl, useRequest } from 'umi';
+import { useSessionStorageState } from 'ahooks';
 import { useEffect, useState } from 'react';
 import ActionBuilder from '@/pages/BasicList/builder/ActionBuilder';
 import ColumnBuilder from '@/pages/BasicList/builder/ColumnBuilder';
@@ -17,14 +18,22 @@ const BasicLayout = () => {
   const [order, setOrder] = useState('');
   const [modalVisible, setModalVisible] = useState(false);
   const [modalUri, setModalUri] = useState('');
-  const [tableColumns, setTableColumns] = useState<BasicListAPI.Field[]>([]);
   const [selectedRowKeys, setSelectedRowKeys] = useState([]);
   const [selectedRows, setSelectedRows] = useState([]);
+  // batchOverview组件拿不到最新的TableColumns，所以只能如下改写
+  const [tableColumns, setTableColumns] = useSessionStorageState<BasicListAPI.Field[]>(
+    'basicListTableColumns',
+    {
+      defaultValue: [],
+    },
+  );
+
+  const lang = useIntl();
 
   const init = useRequest<{ data: BasicListAPI.ListData }>(
     `https://public-api-v2.aspirantzhang.com/api/admins?X-API-KEY=antd&page=${page}&per_page=${perPage}${
       sort && `&sort=${sort}`
-    }${order && `&order=${order}`}`,
+    }${order && `&order=${order}`}&trash=onlyTrashed`,
   );
 
   const request = useRequest(
@@ -85,22 +94,10 @@ const BasicLayout = () => {
     }
   };
 
-  const batchOverview = () => {
-    return (
-      <Table
-        size="small"
-        rowKey="id"
-        dataSource={selectedRows}
-        columns={[tableColumns[0] || {}, tableColumns[1] || {}]}
-        pagination={false}
-      />
-    );
-  };
-
-  function actionHandler(action: BasicListAPI.Action, record: any) {
+  function actionHandler(action: BasicListAPI.Action, record: BasicListAPI.Field) {
     switch (action.action) {
       case 'modal':
-        const realUri = action.uri?.replace(/:\w+/g, (field) => {
+        const realUri = (action.uri || '').replace(/:\w+/g, (field) => {
           return record[field.replace(':', '')];
         });
         setModalUri(realUri as string);
@@ -110,26 +107,48 @@ const BasicLayout = () => {
         init.run();
         break;
       case 'delete':
+      case 'deletePermanently':
+      case 'restore':
+        const operationName = lang.formatMessage({
+          id: `basic-list.list.actionHandler.operation.${action.action}`,
+        });
+        const dataSource = Object.keys(record).length > 0 ? [record] : selectedRows;
         confirm({
-          title: 'Are you sure delete this task?',
+          title: lang.formatMessage(
+            {
+              id: 'basic-list.list.actionHandler.confirmTitle',
+            },
+            {
+              operationName,
+            },
+          ),
           icon: <ExclamationCircleOutlined />,
-          content: batchOverview(),
-          okText: 'Yes',
+          content: batchOverview(dataSource),
+          okText: `Sure to ${action.action}`,
           okType: 'danger',
           cancelText: 'No',
           onOk() {
             return request.run({
               uri: action.uri,
               method: action.method,
-              type: 'delete',
-              ids: selectedRowKeys,
+              type: action.action,
+              ids: Object.keys(record).length > 0 ? [record.id] : selectedRowKeys,
             });
-          },
-          onCancel() {
-            console.log('Cancel');
           },
         });
     }
+  }
+
+  function batchOverview(dataSource: BasicListAPI.Field[]) {
+    return (
+      <Table
+        size="small"
+        rowKey="id"
+        dataSource={dataSource}
+        columns={[tableColumns[0] || {}, tableColumns[1] || {}]}
+        pagination={false}
+      />
+    );
   }
 
   const searchLayout = () => {};
@@ -189,6 +208,7 @@ const BasicLayout = () => {
           pagination={false}
           onChange={onTableChange}
           rowSelection={rowSelection}
+          loading={init?.loading}
         />
         {afterTableLayout()}
       </Card>
@@ -198,6 +218,7 @@ const BasicLayout = () => {
         initUri={modalUri}
         handleCancel={(reload = false) => {
           setModalVisible(false);
+          setModalUri('');
           if (reload) {
             init.run();
           }

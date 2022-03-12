@@ -12,7 +12,7 @@ export const submitFieldsAdapter = (formValues: any) => {
 };
 
 export const setFieldsValueAdapter = (data: BasicListAPI.PageData) => {
-  if (data?.layout?.tabs && data?.dataSource) {
+  if (data?.layout?.tabs && data.dataSource) {
     const newFieldValues = {};
     data.layout.tabs.forEach((tab) => {
       tab.data.forEach((field) => {

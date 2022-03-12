@@ -110,6 +110,7 @@ const Modal = ({
         footer={ActionBuilder(init?.data?.layout?.actions[0].data, actionHandler, request.loading)}
         onCancel={() => handleCancel()}
         maskClosable={false}
+        forceRender
       >
         <Spin spinning={init?.loading} tip="Loading...">
           <Form
