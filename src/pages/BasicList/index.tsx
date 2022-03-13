@@ -1,7 +1,7 @@
 import { FooterToolbar, PageContainer } from '@ant-design/pro-layout';
 import { Card, Col, message, Modal as AntdModal, Pagination, Row, Space, Table } from 'antd';
 import styles from './index.less';
-import { useIntl, useRequest } from 'umi';
+import { history, useIntl, useRequest } from 'umi';
 import { useSessionStorageState } from 'ahooks';
 import { useEffect, useState } from 'react';
 import ActionBuilder from '@/pages/BasicList/builder/ActionBuilder';
@@ -33,7 +33,7 @@ const BasicLayout = () => {
   const init = useRequest<{ data: BasicListAPI.ListData }>(
     `https://public-api-v2.aspirantzhang.com/api/admins?X-API-KEY=antd&page=${page}&per_page=${perPage}${
       sort && `&sort=${sort}`
-    }${order && `&order=${order}`}&trash=onlyTrashed`,
+    }${order && `&order=${order}`}`,
   );
 
   const request = useRequest(
@@ -95,6 +95,7 @@ const BasicLayout = () => {
   };
 
   function actionHandler(action: BasicListAPI.Action, record: BasicListAPI.Field) {
+    console.log(action);
     switch (action.action) {
       case 'modal':
         const realUri = (action.uri || '').replace(/:\w+/g, (field) => {
@@ -136,6 +137,13 @@ const BasicLayout = () => {
             });
           },
         });
+        break;
+      case 'page':
+        const pageUri = (action.uri || '').replace(/:\w+/g, (field) => {
+          return record[field.replace(':', '')];
+        });
+        history.push(`/basic-list${pageUri}`);
+        break;
     }
   }
 
