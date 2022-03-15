@@ -1,13 +1,26 @@
 import { FooterToolbar, PageContainer } from '@ant-design/pro-layout';
-import { Card, Col, message, Modal as AntdModal, Pagination, Row, Space, Table } from 'antd';
+import {
+  Button,
+  Card,
+  Col,
+  Form,
+  Input,
+  message,
+  Modal as AntdModal,
+  Pagination,
+  Row,
+  Space,
+  Table,
+} from 'antd';
 import styles from './index.less';
 import { history, useIntl, useRequest } from 'umi';
-import { useSessionStorageState } from 'ahooks';
+import { useSessionStorageState, useToggle } from 'ahooks';
 import { useEffect, useState } from 'react';
 import ActionBuilder from '@/pages/BasicList/builder/ActionBuilder';
 import ColumnBuilder from '@/pages/BasicList/builder/ColumnBuilder';
 import Modal from '@/pages/BasicList/component/Modal';
-import { ExclamationCircleOutlined } from '@ant-design/icons';
+import { ExclamationCircleOutlined, SearchOutlined } from '@ant-design/icons';
+import SearchBuilder from '@/pages/BasicList/builder/SearchBuilder';
 
 const { confirm } = AntdModal;
 
@@ -20,6 +33,7 @@ const BasicLayout = () => {
   const [modalUri, setModalUri] = useState('');
   const [selectedRowKeys, setSelectedRowKeys] = useState([]);
   const [selectedRows, setSelectedRows] = useState([]);
+  const [searchVisible, { toggle }] = useToggle(false);
   // batchOverview组件拿不到最新的TableColumns，所以只能如下改写
   const [tableColumns, setTableColumns] = useSessionStorageState<BasicListAPI.Field[]>(
     'basicListTableColumns',
@@ -159,7 +173,30 @@ const BasicLayout = () => {
     );
   }
 
-  const searchLayout = () => {};
+  const searchLayout = () => {
+    return (
+      searchVisible && (
+        <Card>
+          <Row gutter={24}>
+            <Col sm={6}>
+              <Form.Item key="id" label="ID" name="id">
+                <Input />
+              </Form.Item>
+            </Col>
+            {SearchBuilder(init?.data?.layout?.tableColumn)}
+          </Row>
+          <Row>
+            <Col className={styles.textAlignRight} sm={24}>
+              <Space>
+                <Button>清空</Button>
+                <Button type="primary">提交</Button>
+              </Space>
+            </Col>
+          </Row>
+        </Card>
+      )
+    );
+  };
 
   const beforeTableLayout = () => {
     return (
@@ -168,7 +205,15 @@ const BasicLayout = () => {
           ...
         </Col>
         <Col xs={24} sm={12} className={styles.tableToolBar}>
-          <Space>{ActionBuilder(init?.data?.layout?.tableToolBar, actionHandler, false)}</Space>
+          <Space>
+            <Button
+              type={searchVisible ? 'primary' : 'default'}
+              shape="circle"
+              icon={<SearchOutlined />}
+              onClick={toggle}
+            />
+            {ActionBuilder(init?.data?.layout?.tableToolBar, actionHandler, false)}
+          </Space>
         </Col>
       </Row>
     );
