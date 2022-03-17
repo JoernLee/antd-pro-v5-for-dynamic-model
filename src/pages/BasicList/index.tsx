@@ -16,11 +16,14 @@ import styles from './index.less';
 import { history, useIntl, useRequest } from 'umi';
 import { useSessionStorageState, useToggle } from 'ahooks';
 import { useEffect, useState } from 'react';
+import { stringify } from 'query-string';
 import ActionBuilder from '@/pages/BasicList/builder/ActionBuilder';
 import ColumnBuilder from '@/pages/BasicList/builder/ColumnBuilder';
 import Modal from '@/pages/BasicList/component/Modal';
 import { ExclamationCircleOutlined, SearchOutlined } from '@ant-design/icons';
 import SearchBuilder from '@/pages/BasicList/builder/SearchBuilder';
+import { submitFieldsAdapter } from '@/pages/BasicList/helper';
+import RcQueueAnim from 'rc-queue-anim';
 
 const { confirm } = AntdModal;
 
@@ -43,12 +46,19 @@ const BasicLayout = () => {
   );
 
   const lang = useIntl();
+  const [searchForm] = Form.useForm();
 
-  const init = useRequest<{ data: BasicListAPI.ListData }>(
-    `https://public-api-v2.aspirantzhang.com/api/admins?X-API-KEY=antd&page=${page}&per_page=${perPage}${
-      sort && `&sort=${sort}`
-    }${order && `&order=${order}`}`,
-  );
+  const init = useRequest<{ data: BasicListAPI.ListData }>((values) => {
+    return {
+      url: `https://public-api-v2.aspirantzhang.com/api/admins?X-API-KEY=antd&page=${page}&per_page=${perPage}${
+        sort && `&sort=${sort}`
+      }${order && `&order=${order}`}`,
+      params: values,
+      paramsSerializer: (params: any) => {
+        return stringify(params, { arrayFormat: 'comma', skipEmptyString: true, skipNull: true });
+      },
+    };
+  }, {});
 
   const request = useRequest(
     (values: any) => {
@@ -106,6 +116,11 @@ const BasicLayout = () => {
       setSort('');
       setOrder('');
     }
+  };
+
+  const onSearchFinish = (values: any) => {
+    init.run(submitFieldsAdapter(values));
+    console.log(submitFieldsAdapter(values));
   };
 
   function actionHandler(action: BasicListAPI.Action, record: BasicListAPI.Field) {
@@ -175,26 +190,39 @@ const BasicLayout = () => {
 
   const searchLayout = () => {
     return (
-      searchVisible && (
-        <Card>
-          <Row gutter={24}>
-            <Col sm={6}>
-              <Form.Item key="id" label="ID" name="id">
-                <Input />
-              </Form.Item>
-            </Col>
-            {SearchBuilder(init?.data?.layout?.tableColumn)}
-          </Row>
-          <Row>
-            <Col className={styles.textAlignRight} sm={24}>
-              <Space>
-                <Button>清空</Button>
-                <Button type="primary">提交</Button>
-              </Space>
-            </Col>
-          </Row>
-        </Card>
-      )
+      <RcQueueAnim type={'top'}>
+        {searchVisible ? (
+          <Card key="searchForm" className={styles.searchForm}>
+            <Form form={searchForm} onFinish={onSearchFinish}>
+              <Row gutter={24}>
+                <Col sm={6}>
+                  <Form.Item key="id" label="ID" name="id">
+                    <Input />
+                  </Form.Item>
+                </Col>
+                {SearchBuilder(init?.data?.layout?.tableColumn)}
+              </Row>
+              <Row>
+                <Col className={styles.textAlignRight} sm={24}>
+                  <Space>
+                    <Button
+                      onClick={() => {
+                        init.run();
+                        searchForm.resetFields();
+                      }}
+                    >
+                      清空
+                    </Button>
+                    <Button type="primary" htmlType="submit">
+                      提交
+                    </Button>
+                  </Space>
+                </Col>
+              </Row>
+            </Form>
+          </Card>
+        ) : null}
+      </RcQueueAnim>
     );
   };
 

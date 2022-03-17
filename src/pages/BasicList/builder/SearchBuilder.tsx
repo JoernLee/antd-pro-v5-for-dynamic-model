@@ -3,11 +3,16 @@ import moment from 'moment';
 
 const SearchBuilder = (data: BasicListAPI.Field[] | undefined) => {
   return (data || []).map((field) => {
+    const basicAttr = {
+      key: field.key,
+      label: field.title,
+      name: field.key,
+    };
     switch (field.type) {
       case 'text': {
         return (
           <Col sm={6}>
-            <Form.Item key={field.key} label={field.title} name={field.key}>
+            <Form.Item {...basicAttr}>
               <Input disabled={field.disabled} />
             </Form.Item>
           </Col>
@@ -16,7 +21,7 @@ const SearchBuilder = (data: BasicListAPI.Field[] | undefined) => {
       case 'tree': {
         return (
           <Col sm={6}>
-            <Form.Item key={field.key} label={field.title} name={field.key}>
+            <Form.Item {...basicAttr}>
               <TreeSelect disabled={field.disabled} treeData={field.data} treeCheckable />
             </Form.Item>
           </Col>
@@ -25,7 +30,7 @@ const SearchBuilder = (data: BasicListAPI.Field[] | undefined) => {
       case 'datetime': {
         return (
           <Col sm={12}>
-            <Form.Item key={field.key} label={field.title} name={field.key}>
+            <Form.Item {...basicAttr}>
               <DatePicker.RangePicker
                 showTime
                 style={{ width: '100%' }}
