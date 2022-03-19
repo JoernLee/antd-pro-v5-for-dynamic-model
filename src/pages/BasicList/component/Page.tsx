@@ -121,7 +121,7 @@ const Page = () => {
             <Col span={8}>
               {(init?.data?.layout?.actions || []).map((action) => {
                 return (
-                  <Card>
+                  <Card key={action.name}>
                     <Space>{ActionBuilder(action.data, actionHandler)}</Space>
                   </Card>
                 );

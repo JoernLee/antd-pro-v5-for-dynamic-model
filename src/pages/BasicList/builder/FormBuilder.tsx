@@ -53,7 +53,11 @@ const FormBuilder = (data: BasicListAPI.Field[] | undefined) => {
           <Form.Item {...basicAttr}>
             <Radio.Group buttonStyle="solid" defaultValue={field.data[0]?.value}>
               {(field.data || []).map((item: any) => {
-                return <Radio.Button value={item.value}>{item.name}</Radio.Button>;
+                return (
+                  <Radio.Button key={item.name} value={item.value}>
+                    {item.name}
+                  </Radio.Button>
+                );
               })}
             </Radio.Group>
           </Form.Item>

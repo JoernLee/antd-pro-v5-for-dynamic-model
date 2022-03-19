@@ -13,7 +13,7 @@ import {
   Table,
 } from 'antd';
 import styles from './index.less';
-import { history, useIntl, useRequest } from 'umi';
+import { history, useIntl, useLocation, useRequest } from 'umi';
 import { useSessionStorageState, useToggle } from 'ahooks';
 import { useEffect, useState } from 'react';
 import { stringify } from 'query-string';
@@ -47,12 +47,16 @@ const BasicLayout = () => {
 
   const lang = useIntl();
   const [searchForm] = Form.useForm();
+  const location = useLocation();
 
   const init = useRequest<{ data: BasicListAPI.ListData }>((values) => {
     return {
-      url: `https://public-api-v2.aspirantzhang.com/api/admins?X-API-KEY=antd&page=${page}&per_page=${perPage}${
-        sort && `&sort=${sort}`
-      }${order && `&order=${order}`}`,
+      url: `https://public-api-v2.aspirantzhang.com${location.pathname.replace(
+        '/basic-list',
+        '',
+      )}?X-API-KEY=antd&page=${page}&per_page=${perPage}${sort && `&sort=${sort}`}${
+        order && `&order=${order}`
+      }`,
       params: values,
       paramsSerializer: (params: any) => {
         return stringify(params, { arrayFormat: 'comma', skipEmptyString: true, skipNull: true });
@@ -95,7 +99,7 @@ const BasicLayout = () => {
 
   useEffect(() => {
     init.run();
-  }, [page, perPage, sort, order]);
+  }, [page, perPage, sort, order, location.pathname]);
 
   useEffect(() => {
     if (init?.data?.layout?.tableColumn) {
