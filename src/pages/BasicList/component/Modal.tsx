@@ -61,6 +61,7 @@ const Modal = ({
         // format上面onSuccess的入参
         return res;
       },
+      throttleInterval: 1000,
     },
   );
 

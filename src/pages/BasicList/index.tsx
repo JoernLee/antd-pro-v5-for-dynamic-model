@@ -14,7 +14,7 @@ import {
 } from 'antd';
 import styles from './index.less';
 import { history, useIntl, useLocation, useRequest } from 'umi';
-import { useSessionStorageState, useToggle } from 'ahooks';
+import { useUpdateEffect, useSessionStorageState, useToggle } from 'ahooks';
 import { useEffect, useState } from 'react';
 import { stringify } from 'query-string';
 import ActionBuilder from '@/pages/BasicList/builder/ActionBuilder';
@@ -94,10 +94,11 @@ const BasicLayout = () => {
         // format上面onSuccess的入参
         return res;
       },
+      throttleInterval: 1000,
     },
   );
 
-  useEffect(() => {
+  useUpdateEffect(() => {
     init.run();
   }, [page, perPage, sort, order, location.pathname]);
 

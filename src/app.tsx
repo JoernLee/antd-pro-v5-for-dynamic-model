@@ -1,4 +1,4 @@
-import type { Settings as LayoutSettings } from '@ant-design/pro-layout';
+import type { Settings as LayoutSettings, MenuDataItem } from '@ant-design/pro-layout';
 import { PageLoading, SettingDrawer } from '@ant-design/pro-layout';
 import type { RunTimeLayoutConfig } from 'umi';
 import { history } from 'umi';
@@ -25,7 +25,7 @@ export const initialStateConfig = {
 export async function getInitialState(): Promise<{
   settings?: Partial<LayoutSettings>;
   currentUser?: API.CurrentUser;
-  currentMenu?: any;
+  currentMenu?: MenuDataItem[];
   loading?: boolean;
   fetchUserInfo?: () => Promise<API.CurrentUser | undefined>;
 }> {
@@ -82,9 +82,7 @@ export const layout: RunTimeLayoutConfig = ({ initialState, setInitialState }) =
     },
     menuHeaderRender: undefined,
     menuDataRender: () => {
-      if (initialState?.currentMenu) {
-        return initialState.currentMenu;
-      }
+      return initialState?.currentMenu || [];
     },
     // 自定义 403 页面
     // unAccessible: <div>unAccessible</div>,
