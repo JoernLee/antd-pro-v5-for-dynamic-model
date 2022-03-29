@@ -19,7 +19,7 @@ const Modal = ({
   const [form] = Form.useForm();
   const init = useRequest<{ data: BasicListAPI.PageData }>(
     () => {
-      return `https://public-api-v2.aspirantzhang.com${initUri}?X-API-KEY=antd`;
+      return `${initUri}`;
     },
     {
       // 必须手动.run触发，不会在执行时自动触发
@@ -40,11 +40,10 @@ const Modal = ({
       });
       const { uri, method, ...formValues } = values;
       return {
-        url: `https://public-api-v2.aspirantzhang.com${uri}`,
+        url: `${uri}`,
         method,
         data: {
           ...submitFieldsAdapter(formValues),
-          'X-API-KEY': 'antd',
         },
       };
     },

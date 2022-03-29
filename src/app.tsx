@@ -24,15 +24,16 @@ export const initialStateConfig = {
  * */
 export async function getInitialState(): Promise<{
   settings?: Partial<LayoutSettings>;
-  currentUser?: API.CurrentUser;
+  currentUser?: any;
   currentMenu?: MenuDataItem[];
   loading?: boolean;
-  fetchUserInfo?: () => Promise<API.CurrentUser | undefined>;
+  fetchUserInfo?: () => Promise<any | undefined>;
+  fetchUserMenu?: () => Promise<MenuDataItem[] | undefined>;
 }> {
   const fetchUserInfo = async () => {
     try {
-      const msg = await queryCurrentUser();
-      return msg.data;
+      const currentUser = await queryCurrentUser();
+      return currentUser;
     } catch (error) {
       history.push(loginPath);
     }
@@ -46,11 +47,10 @@ export async function getInitialState(): Promise<{
     }
     return undefined;
   };
-  // 如果是登录页面，不执行
+  // 如果不是登录页面，执行 - 获取初始化用户信息和菜单数据
   if (history.location.pathname !== loginPath) {
     const currentUser = await fetchUserInfo();
     const currentMenu = await fetchUserMenu();
-    console.log(currentUser);
     return {
       fetchUserInfo,
       currentUser,
@@ -60,6 +60,7 @@ export async function getInitialState(): Promise<{
   }
   return {
     fetchUserInfo,
+    fetchUserMenu,
     settings: defaultSettings,
   };
 }

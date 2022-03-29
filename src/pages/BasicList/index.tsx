@@ -14,7 +14,7 @@ import {
 } from 'antd';
 import styles from './index.less';
 import { history, useIntl, useLocation, useRequest } from 'umi';
-import { useUpdateEffect, useSessionStorageState, useToggle } from 'ahooks';
+import { useSessionStorageState, useToggle, useUpdateEffect } from 'ahooks';
 import { useEffect, useState } from 'react';
 import { stringify } from 'query-string';
 import ActionBuilder from '@/pages/BasicList/builder/ActionBuilder';
@@ -51,12 +51,9 @@ const BasicLayout = () => {
 
   const init = useRequest<{ data: BasicListAPI.ListData }>((values) => {
     return {
-      url: `https://public-api-v2.aspirantzhang.com${location.pathname.replace(
-        '/basic-list',
-        '',
-      )}?X-API-KEY=antd&page=${page}&per_page=${perPage}${sort && `&sort=${sort}`}${
-        order && `&order=${order}`
-      }`,
+      url: `${location.pathname.replace('/basic-list', '')}?page=${page}&per_page=${perPage}${
+        sort && `&sort=${sort}`
+      }${order && `&order=${order}`}`,
       params: values,
       paramsSerializer: (params: any) => {
         return stringify(params, { arrayFormat: 'comma', skipEmptyString: true, skipNull: true });
@@ -74,11 +71,10 @@ const BasicLayout = () => {
       });
       const { uri, method, ...formValues } = values;
       return {
-        url: `https://public-api-v2.aspirantzhang.com${uri}`,
+        url: `${uri}`,
         method,
         data: {
           ...formValues,
-          'X-API-KEY': 'antd',
         },
       };
     },
@@ -89,6 +85,7 @@ const BasicLayout = () => {
           content: data.message,
           key: 'process',
         });
+        init.run();
       },
       formatResult: (res: any) => {
         // format上面onSuccess的入参
@@ -101,6 +98,11 @@ const BasicLayout = () => {
   useUpdateEffect(() => {
     init.run();
   }, [page, perPage, sort, order, location.pathname]);
+
+  useEffect(() => {
+    setSelectedRowKeys([]);
+    setSelectedRows([]);
+  }, [location.pathname]);
 
   useEffect(() => {
     if (init?.data?.layout?.tableColumn) {
@@ -197,35 +199,39 @@ const BasicLayout = () => {
     return (
       <RcQueueAnim type={'top'}>
         {searchVisible ? (
-          <Card key="searchForm" className={styles.searchForm}>
-            <Form form={searchForm} onFinish={onSearchFinish}>
-              <Row gutter={24}>
-                <Col sm={6}>
-                  <Form.Item key="id" label="ID" name="id">
-                    <Input />
-                  </Form.Item>
-                </Col>
-                {SearchBuilder(init?.data?.layout?.tableColumn)}
-              </Row>
-              <Row>
-                <Col className={styles.textAlignRight} sm={24}>
-                  <Space>
-                    <Button
-                      onClick={() => {
-                        init.run();
-                        searchForm.resetFields();
-                      }}
-                    >
-                      清空
-                    </Button>
-                    <Button type="primary" htmlType="submit">
-                      提交
-                    </Button>
-                  </Space>
-                </Col>
-              </Row>
-            </Form>
-          </Card>
+          <div id="searchForm">
+            <Card key="searchForm" className={styles.searchForm}>
+              <Form form={searchForm} onFinish={onSearchFinish}>
+                <Row gutter={24}>
+                  <Col sm={6}>
+                    <Form.Item key="id" label="ID" name="id">
+                      <Input />
+                    </Form.Item>
+                  </Col>
+                  {SearchBuilder(init?.data?.layout?.tableColumn)}
+                </Row>
+                <Row>
+                  <Col className={styles.textAlignRight} sm={24}>
+                    <Space>
+                      <Button
+                        onClick={() => {
+                          init.run();
+                          searchForm.resetFields();
+                          setSelectedRowKeys([]);
+                          setSelectedRows([]);
+                        }}
+                      >
+                        清空
+                      </Button>
+                      <Button type="primary" htmlType="submit">
+                        提交
+                      </Button>
+                    </Space>
+                  </Col>
+                </Row>
+              </Form>
+            </Card>
+          </div>
         ) : null}
       </RcQueueAnim>
     );

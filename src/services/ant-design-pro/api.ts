@@ -6,8 +6,8 @@ import { request } from 'umi';
 /** 获取当前的用户 GET /api/currentUser */
 export async function currentUser(options?: { [key: string]: any }) {
   return request<{
-    data: API.CurrentUser;
-  }>('/api/currentUser', {
+    data: any;
+  }>('/api/admins/info', {
     method: 'GET',
     ...(options || {}),
   });
@@ -15,7 +15,7 @@ export async function currentUser(options?: { [key: string]: any }) {
 
 /** 获取菜单数据  */
 export async function currentMenu(options?: { [key: string]: any }) {
-  return request<MenuDataItem[]>('https://public-api-v2.aspirantzhang.com/api/menus/backend', {
+  return request<MenuDataItem[]>('/api/menus/backend', {
     method: 'GET',
     ...(options || {}),
   });
@@ -23,7 +23,7 @@ export async function currentMenu(options?: { [key: string]: any }) {
 
 /** 退出登录接口 POST /api/login/outLogin */
 export async function outLogin(options?: { [key: string]: any }) {
-  return request<Record<string, any>>('/api/login/outLogin', {
+  return request<Record<string, any>>('/api/admins/logout', {
     method: 'POST',
     ...(options || {}),
   });
@@ -31,7 +31,7 @@ export async function outLogin(options?: { [key: string]: any }) {
 
 /** 登录接口 POST /api/login/account */
 export async function login(body: API.LoginParams, options?: { [key: string]: any }) {
-  return request<API.LoginResult>('/api/login/account', {
+  return request<Record<string, any>>('/api/admins/login', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
