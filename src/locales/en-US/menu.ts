@@ -50,6 +50,7 @@ export default {
   'menu.editor.mind': 'Mind Editor',
   'menu.editor.koni': 'Koni Editor',
   'menu.basic-list': 'Admin List',
+  'menu.modal-design': 'Modal Design',
   'menu.admin-list': 'Admin List',
   'menu.admin-list.edit': 'Admin Edit',
   'menu.admin-list.add': 'Admin Add',

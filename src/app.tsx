@@ -9,8 +9,8 @@ import {
   currentUser as queryCurrentUser,
 } from './services/ant-design-pro/api';
 import defaultSettings from '../config/defaultSettings';
-import type { RequestConfig } from '@@/plugin-request/request';
 import { message } from 'antd';
+import type { RequestConfig } from '@@/plugin-request/request';
 
 const loginPath = '/user/login';
 
@@ -82,9 +82,9 @@ export const layout: RunTimeLayoutConfig = ({ initialState, setInitialState }) =
       }
     },
     menuHeaderRender: undefined,
-    menuDataRender: () => {
+    /*menuDataRender: () => {
       return initialState?.currentMenu || [];
-    },
+    },*/
     // 自定义 403 页面
     // unAccessible: <div>unAccessible</div>,
     // 增加一个 loading 的状态
