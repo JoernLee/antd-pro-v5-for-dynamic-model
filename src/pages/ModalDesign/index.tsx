@@ -1,4 +1,4 @@
-import { PageContainer } from '@ant-design/pro-layout';
+import { FooterToolbar, PageContainer } from '@ant-design/pro-layout';
 import 'antd/dist/antd.css';
 import { createForm } from '@formily/core';
 import { createSchemaField } from '@formily/react';
@@ -640,16 +640,18 @@ const Index = () => {
               </SchemaField.Array>
             </SchemaField>
           </Card>
-          <Button
-            type={'primary'}
-            onClick={() => {
-              form.submit(onSubmitHandler); //很神奇的写法吧
-            }}
-          >
-            Submit
-          </Button>
         </Space>
       </Form>
+      <FooterToolbar>
+        <Button
+          type={'primary'}
+          onClick={() => {
+            form.submit(onSubmitHandler); //很神奇的写法吧
+          }}
+        >
+          Submit
+        </Button>
+      </FooterToolbar>
     </PageContainer>
   );
 };
