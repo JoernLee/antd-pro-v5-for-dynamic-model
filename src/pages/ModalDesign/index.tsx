@@ -1,12 +1,13 @@
 import { FooterToolbar, PageContainer } from '@ant-design/pro-layout';
 import 'antd/dist/antd.css';
-import { createForm } from '@formily/core';
+import { createForm, isField, onFieldChange, onFieldReact } from '@formily/core';
 import { createSchemaField } from '@formily/react';
 import { ArrayTable, Checkbox, Form, FormItem, Input, Select, Switch } from '@formily/antd';
 import { Button, Card, Space } from 'antd';
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import * as enums from './enums';
 import { schemaExample } from './initialValues';
+import Modal from '@/pages/ModalDesign/Modal';
 
 const SchemaField = createSchemaField({
   components: {
@@ -21,19 +22,46 @@ const SchemaField = createSchemaField({
 });
 
 const Index = () => {
-  const onSubmitHandler = (values: any) => {
-    console.log(values);
-  };
+  const [modalVisible, setModalVisible] = useState(false);
+  const [currentFieldPath, setCurrentFieldPath] = useState('');
 
   const form = useMemo(
     //这个createForm本来应该是写在组件上面的。如果想移动到组件内部，貌似用这个useMemo来搞，很神奇的写法
     () =>
       createForm({
-        effects: () => {},
+        effects: () => {
+          onFieldReact('fields.*.data', (field) => {
+            // 当同行type选择为switch或radio时enable Data按钮，弹窗配置字段
+            if (isField(field)) {
+              const typeValue = field.query('.type').get('value'); //这里query那个('.type')直接就是取本行的type，很神奇的写法
+              const attrValue = typeValue === 'switch' || typeValue === 'radio';
+              field.editable = attrValue;
+              field.required = attrValue;
+            }
+          });
+          onFieldChange('fields.*.data', ['active'], (field) => {
+            if (isField(field) && field.active) {
+              setCurrentFieldPath(field.path.toString()); //一定注意，field.path在v2里面不是字符串了，要toString()
+              setModalVisible(true);
+              field.active = false;
+            }
+          });
+        },
         initialValues: schemaExample,
       }),
     [],
   );
+
+  const onSubmitHandler = (values: any) => {
+    form.setFieldState(currentFieldPath, (state) => {
+      state.value = values.data;
+    });
+    setModalVisible(false);
+  };
+
+  const onModalCancel = () => {
+    setModalVisible(false);
+  };
 
   return (
     <PageContainer>
@@ -652,6 +680,7 @@ const Index = () => {
           Submit
         </Button>
       </FooterToolbar>
+      <Modal visible={modalVisible} handleCancel={onModalCancel} handleSubmit={onSubmitHandler} />
     </PageContainer>
   );
 };
