@@ -2,6 +2,7 @@ import { Modal as AntdModal } from 'antd';
 import { createForm } from '@formily/core';
 import { createSchemaField } from '@formily/react';
 import { ArrayTable, Checkbox, Form, FormItem, Input, Select, Switch } from '@formily/antd';
+import { useEffect } from 'react';
 
 const form = createForm();
 const SchemaField = createSchemaField({
@@ -17,13 +18,65 @@ const SchemaField = createSchemaField({
 
 const Modal = ({
   visible,
+  modalState,
   handleCancel,
   handleSubmit,
 }: {
   visible: boolean;
+  modalState: Record<string, any>;
   handleCancel: (reload?: boolean) => void;
   handleSubmit: (values: any) => void;
 }) => {
+  useEffect(() => {
+    form.reset('*', {
+      forceClear: true,
+    });
+    // switch类型的表单需要隐藏按钮并设置初始值 - 只可以有两个配置项
+    if (modalState.type === 'switch') {
+      form.setFieldState('data.sortColumn', (state) => {
+        state.visible = false;
+      });
+      form.setFieldState('data.operationColumn', (state) => {
+        state.visible = false;
+      });
+      form.setFieldState('data.addition', (state) => {
+        state.visible = false;
+      });
+      form.setFormState((state) => {
+        state.initialValues = {
+          data: [
+            {
+              title: 'Enabled',
+              value: 1,
+            },
+            {
+              title: 'Disabled',
+              value: 0,
+            },
+          ],
+        };
+      });
+    } else {
+      form.setFieldState('data.sortColumn', (state) => {
+        state.visible = true;
+      });
+      form.setFieldState('data.operationColumn', (state) => {
+        state.visible = true;
+      });
+      form.setFieldState('data.addition', (state) => {
+        state.visible = true;
+      });
+    }
+
+    if (modalState.values && Object.keys(modalState.values).length > 0) {
+      form.setFormState((state) => {
+        state.values = {
+          data: modalState.values,
+        };
+      });
+    }
+  }, [modalState]);
+
   return (
     <div>
       <AntdModal
@@ -38,7 +91,7 @@ const Modal = ({
       >
         <Form form={form}>
           <SchemaField>
-            <SchemaField.Array x-component="ArrayTable" name="fields" x-decorator="FormItem">
+            <SchemaField.Array x-component="ArrayTable" name="data" x-decorator="FormItem">
               <SchemaField.Object>
                 <SchemaField.Void
                   x-component="ArrayTable.Column"

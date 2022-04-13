@@ -4,10 +4,11 @@ import { createForm, isField, onFieldChange, onFieldReact } from '@formily/core'
 import { createSchemaField } from '@formily/react';
 import { ArrayTable, Checkbox, Form, FormItem, Input, Select, Switch } from '@formily/antd';
 import { Button, Card, Space } from 'antd';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import * as enums from './enums';
 import { schemaExample } from './initialValues';
 import Modal from '@/pages/ModalDesign/Modal';
+import { useSetState } from 'ahooks';
 
 const SchemaField = createSchemaField({
   components: {
@@ -23,6 +24,10 @@ const SchemaField = createSchemaField({
 
 const Index = () => {
   const [modalVisible, setModalVisible] = useState(false);
+  const [modalState, setModalState] = useSetState({
+    type: '',
+    values: {},
+  });
   const [currentFieldPath, setCurrentFieldPath] = useState('');
 
   const form = useMemo(
@@ -30,6 +35,12 @@ const Index = () => {
     () =>
       createForm({
         effects: () => {
+          onFieldReact('*.*.uri', (field) => {
+            if (isField(field)) {
+              //为啥要isField? 见https://github.com/alibaba/formily/discussions/1257
+              field.value = field.value?.replace('admins', field.query('routeName').get('value'));
+            }
+          });
           onFieldReact('fields.*.data', (field) => {
             // 当同行type选择为switch或radio时enable Data按钮，弹窗配置字段
             if (isField(field)) {
@@ -42,7 +53,10 @@ const Index = () => {
           onFieldChange('fields.*.data', ['active'], (field) => {
             if (isField(field) && field.active) {
               setCurrentFieldPath(field.path.toString()); //一定注意，field.path在v2里面不是字符串了，要toString()
-              setModalVisible(true);
+              setModalState({
+                values: field.value,
+                type: field.query('.type').get('value'),
+              });
               field.active = false;
             }
           });
@@ -52,15 +66,26 @@ const Index = () => {
     [],
   );
 
+  useEffect(() => {
+    if (modalState.type) {
+      setModalVisible(true);
+    }
+  }, [modalState.type]);
+
   const onSubmitHandler = (values: any) => {
     form.setFieldState(currentFieldPath, (state) => {
       state.value = values.data;
     });
     setModalVisible(false);
+    setModalState({ type: '', values: {} });
   };
 
   const onModalCancel = () => {
     setModalVisible(false);
+    setModalState({
+      type: '',
+      values: {},
+    });
   };
 
   return (
@@ -680,7 +705,12 @@ const Index = () => {
           Submit
         </Button>
       </FooterToolbar>
-      <Modal visible={modalVisible} handleCancel={onModalCancel} handleSubmit={onSubmitHandler} />
+      <Modal
+        visible={modalVisible}
+        modalState={modalState}
+        handleCancel={onModalCancel}
+        handleSubmit={onSubmitHandler}
+      />
     </PageContainer>
   );
 };
