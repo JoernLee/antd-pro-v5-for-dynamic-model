@@ -61,7 +61,7 @@
   {
     name: 'modal-design',
     icon: 'table',
-    path: '/modal-design/',
+    path: '/modal-design/*',
     component: './ModalDesign',
   },
   {

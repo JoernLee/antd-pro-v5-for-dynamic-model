@@ -180,6 +180,12 @@ const BasicLayout = () => {
         });
         history.push(`/basic-list${pageUri}`);
         break;
+      case 'modelDesign':
+        const designUri = (action.uri || '').replace(/:\w+/g, (field) => {
+          return record[field.replace(':', '')];
+        });
+        history.push(`/modal-design${designUri}`);
+        break;
     }
   }
 

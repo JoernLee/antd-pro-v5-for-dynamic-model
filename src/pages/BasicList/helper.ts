@@ -27,6 +27,16 @@ export const setFieldsValueAdapter = (data: BasicListAPI.PageData) => {
           case 'datetime':
             newFieldValues[field.key] = moment(data.dataSource[field.key]);
             break;
+          case 'textarea':
+            if (
+              typeof data.dataSource[field.key] === 'object' &&
+              data.dataSource[field.key] !== null
+            ) {
+              newFieldValues[field.key] = JSON.stringify(data.dataSource[field.key]);
+            } else {
+              newFieldValues[field.key] = data.dataSource[field.key];
+            }
+            break;
           default:
             newFieldValues[field.key] = data.dataSource[field.key];
             break;
