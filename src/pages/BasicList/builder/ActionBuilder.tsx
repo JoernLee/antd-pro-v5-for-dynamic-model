@@ -16,6 +16,7 @@ const ActionBuilder = (
           type={action.type as ButtonType}
           onClick={() => actionHandler && actionHandler(action, record)}
           loading={loading}
+          className={`btn-${action.text.toLowerCase().replace(' ', '-')}`}
         >
           {action.text}
         </Button>
